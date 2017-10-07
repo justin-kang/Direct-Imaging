@@ -25,7 +25,7 @@ for i = 1:length(img_path)
     [rotpposn, ~] = fits.readKey(file, 'ROTPPOSN');
     [el, ~] = fits.readKey(file, 'EL');
     [instangl, ~] = fits.readKey(file, 'INSTANGL');
-    p_angles(1, i) = str2double(parang) + str2double(rotpposn) - ...
+    p_angles(i) = str2double(parang) + str2double(rotpposn) - ...
         str2double(el) - str2double(instangl);
     fits.closeFile(file);
 end
@@ -34,23 +34,50 @@ end
 centers = circles(images, RADIUS, dirs, img_path, 0);
 
 % register each image and produce the sum and median images
-[sum_image, median_image] = imreg(images, centers);
-%%{
-figure(1)
-%colormap gray
-imagesc(sum_image);
-figure(2)
-%colormap gray
-imagesc(median_image);
-%%}
+% show the sqrt to make the planet's presence more obvious
+[sum_12, median_12] = imreg(images(1:length(DIR_12)), ...
+    centers(1:length(DIR_12),:));
+%{
+figure('Name','Summed ROXs12','NumberTitle','off');
+colormap gray
+imagesc(sqrt(sum_12));
+figure('Name','Median ROXs12','NumberTitle','off');
+colormap gray
+imagesc(sqrt(median_12))
+%}
+[sum_42b, median_42b] = imreg(images(length(DIR_12)+1:end), ...
+    centers(length(DIR_12)+1:end,:));
+%{
+figure('Name','Summed ROXs42B','NumberTitle','off');
+colormap gray
+imagesc(sqrt(sum_42b));
+figure('Name','Median ROXs42B','NumberTitle','off');
+colormap gray
+imagesc(sqrt(median_42b));
+%}
 
 % register each image (including angle) and produce the sum and median images
-%[sum_image_rot, median_image_rot] = imreg_ang(images, centers, p_angles);
+% show the sqrt to make the planet's presence more obvious
+[sum_ang_12, median_ang_12] = imreg_ang(images(1:length(DIR_12)), ...
+    RADIUS, p_angles);
 %{
-figure(3)
+figure('Name','Rotated Summed ROXs12','NumberTitle','off');
 colormap gray
-imagesc(sum_image_rot);
-figure(4)
+imagesc(sqrt(sum_ang_12));
+figure('Name','Rotated Median ROXs12','NumberTitle','off');
 colormap gray
-imagesc(median_image_rot);
+imagesc(sqrt(median_ang_12))
 %}
+[sum_ang_42b, median_ang_42b] = imreg_ang(images(length(DIR_12)+1:end), ...
+    RADIUS, p_angles);
+%{
+figure('Name','Rotated Summed ROXs42B','NumberTitle','off');
+colormap gray
+imagesc(sqrt(sum_ang_42b));
+figure('Name','Rotated Median ROXs42B','NumberTitle','off');
+colormap gray
+imagesc(sqrt(median_ang_42b));
+%}
+
+% calculate the brightness profile as a function of distance from star
+% (azimuthal median) and subtract it off each image
