@@ -1,3 +1,4 @@
+% AST 381 Project 2
 import matlab.io.*
 % set up pathing for our images
 path_12 = './img/ROXs12 calibrated/';
@@ -81,3 +82,5 @@ imagesc(sqrt(median_ang_42b));
 
 % calculate the brightness profile as a function of distance from star
 % (azimuthal median) and subtract it off each image
+imgs = brightness(images, centers);
+

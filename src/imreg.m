@@ -1,4 +1,5 @@
 function[sum_image, median_image] = imreg(images, centers)
+%Register all images and produce the sum and median images of the stack
 % get the maximum offset in center
 r_min = min(centers(:,1));
 r_max = max(centers(:,1));
