@@ -1,17 +1,23 @@
-function[centers] = circles(images, RADIUS, dirs, img_path, flag)
+function[centers] = circles(images, radius, varargin)
 % how wide to expect the star's flux to go
-WINDOW = RADIUS * 4;
+WINDOW = radius * 4;
 % the file we will be writing the centers to
 file = [];
-if flag
-    file = fopen('src/star_centers.txt', 'w');
+if length(varargin) > 1
+    file = fopen('src/star_centers.txt', varargin{4});
 end
-% the matrix we will be writing the centers to
+% the matrix of centers
 centers = zeros(size(images,2),2);
 for i = 1:size(images,2)
     img = images{i};
     % get the center of the coronagraphs from the images
-    center = detectCircles(img, RADIUS);
+    center = detectCircles(img, radius);
+    % just use the center if don't need to get weighted centroid
+    if ~isempty(varargin)
+        centers(i,:) = center;
+        continue;
+    end
+    % correct the center using weighted centroid
     % make a window around the star
     r_min = center(1,1) - WINDOW;
     r_max = center(1,1) + WINDOW;
@@ -31,7 +37,7 @@ for i = 1:size(images,2)
     end
     % get the patch of just the star from the image
     img_patch = img(r_min:r_max,c_min:c_max);
-    % find the center of the star by calculating the weighted centroid
+    % find the center by calculating the weighted centroid
     [r_sum, r_flux, c_sum, c_flux] = deal(uint64(0));
     for r = 1:size(img_patch,1)
         for c = 1:size(img_patch,2)
@@ -46,12 +52,14 @@ for i = 1:size(images,2)
     % copy the center to the matrix
     centers(i,:) = [r_cen, c_cen];
     % print out the center to the file
-    if flag
-        fprintf(file,'"%s%s" %u %u %u',dirs{i},img_path(i).name,r_cen,c_cen);
+    if length(varargin) > 1
+        dirs = varargin{2};
+        img_path = varargin{3};
+        fprintf(file,'"%s%s" %u %u %u', dirs, img_path(i).name, r_cen, c_cen);
         fprintf(file, '\n');
     end
 end
-if flag
+if length(varargin) > 1
     fclose(file);
 end
 end
