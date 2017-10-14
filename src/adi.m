@@ -27,15 +27,16 @@ for i = 1:size(images,2)
     intensities(:,intensities(2,:)==0) = [];
     ratio = median(intensities(1,:)./intensities(2,:));
     % register the science frame against the calibrator
-    registered = imRegister({median_img, img}, [center;centers(i,:)]);
+    [registered, im_center] = ...
+        imRegister({median_img, img}, [center;centers(i,:)]);
     registered(isnan(registered)) = 0;
     new_median = registered(:,:,1);
     img = registered(:,:,2);
     % rescale the calibrator brightness to the science target brightness
     new_median = new_median * ratio;
-    im_centers(i,:) = circles({img}, radius);
+    im_centers(i,:) = im_center;
     % subtract off the calibrator and add to the image stack
-    img = abs(img - new_median);
+    img = img - new_median;
     img(img < 0) = 0;
     im_stack{i} = img;
 end

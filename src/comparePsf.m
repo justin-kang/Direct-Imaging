@@ -24,13 +24,11 @@ theta = 0:0.001:2*pi;
 for i = 1:size(images,2)
     chi_sq = zeros(size(calibrators))';
     % register the science and all calibrator frames
-    registered = imRegister([images(i),calibrators], ...
-        [img_centers(i,:);cal_centers]);
+    [registered, center] = ...
+        imRegister([images(i),calibrators], [img_centers(i,:);cal_centers]);
     registered(isnan(registered)) = 0;
     % the registered original image
     img = registered(:,:,1);
-    % find the star's location for all of the frames
-    center = circles({img}, radius);
     % the differences in the images
     diffs = zeros(size(registered));
     diffs(:,:,1) = [];
@@ -58,7 +56,7 @@ for i = 1:size(images,2)
         chi_sq(j) = sum(chi(:));
     end
     % use the minimum chi-squared as the best match
-    [~, idx] = min(chi_sq);    
+    [~, idx] = min(chi_sq);
     temp = diffs(:,:,idx);
     temp(temp<0) = 0;
     im_stack{i} = temp;
